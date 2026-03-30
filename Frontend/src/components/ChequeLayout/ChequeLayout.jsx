@@ -30,6 +30,10 @@ function ChequeLayout({ data }) {
   const template = bankTemplates[bank] || bankTemplates.SBI;
   const horizontalOffset = Number(offsetX) || 0;
   const verticalOffset = Number(offsetY) || 0;
+  const showGuideLines = template.showGuideLines !== false;
+  const showAmountBoxBorder = template.showAmountBoxBorder !== false;
+  const showSignatureGuide = template.showSignatureGuide !== false;
+  const showMicrHint = template.showMicrHint !== false;
 
   const amountWords = numberToWordsIndian(amount);
   const amountFormatted = amount
@@ -39,11 +43,14 @@ function ChequeLayout({ data }) {
   const dateDisplay = date ? date.split("-").reverse().join("") : "________";
 
   return (
-    <ChequeWrapper>
+    <ChequeWrapper $backgroundImage={template.backgroundImage}>
       <DateField
         $top={template.dateTop}
         $right={template.dateRight}
         $width={template.dateWidth}
+        $gap={template.dateGap}
+        $charWidth={template.dateCharWidth}
+        $fontSize={template.dateFontSize}
         $offsetX={horizontalOffset}
         $offsetY={verticalOffset}
       >
@@ -67,6 +74,8 @@ function ChequeLayout({ data }) {
         $top={template.payeeTop}
         $left={template.payeeLeft}
         $width={template.payeeWidth}
+        $fontSize={template.payeeFontSize}
+        $showGuideLine={showGuideLines}
         $offsetX={horizontalOffset}
         $offsetY={verticalOffset}
       >
@@ -77,6 +86,8 @@ function ChequeLayout({ data }) {
         $top={template.amountWordsTop}
         $left={template.amountWordsLeft}
         $width={template.amountWordsWidth}
+        $fontSize={template.amountWordsFontSize}
+        $showGuideLine={showGuideLines}
         $offsetX={horizontalOffset}
         $offsetY={verticalOffset}
       >
@@ -85,15 +96,19 @@ function ChequeLayout({ data }) {
 
       <AmountBox
         $top={template.amountBoxTop}
+        $left={template.amountBoxLeft}
         $right={template.amountBoxRight}
+        $width={template.amountBoxWidth}
         $minWidth={template.amountBoxMinWidth}
+        $fontSize={template.amountBoxFontSize}
+        $showBorder={showAmountBoxBorder}
         $offsetX={horizontalOffset}
         $offsetY={verticalOffset}
       >
         {template.showAmountPrefix !== false ? (
           <span style={{ fontSize: "10pt" }}>Rs.</span>
         ) : null}
-        <span>{amountFormatted || "0.00"}</span>
+        <span>{amountFormatted || ""}</span>
       </AmountBox>
 
       {signatureImg ? (
@@ -104,15 +119,19 @@ function ChequeLayout({ data }) {
           $offsetY={verticalOffset}
         />
       ) : null}
-      <SignatureLine $offsetX={horizontalOffset} $offsetY={verticalOffset}>
-        Authorised Signatory
-      </SignatureLine>
+      {showSignatureGuide ? (
+        <SignatureLine $offsetX={horizontalOffset} $offsetY={verticalOffset}>
+          Authorised Signatory
+        </SignatureLine>
+      ) : null}
 
-      <MicrBar>
-        <span style={{ opacity: 0.4, fontSize: "9pt", letterSpacing: "2px" }}>
-          MICR ZONE - DO NOT PRINT
-        </span>
-      </MicrBar>
+      {showMicrHint ? (
+        <MicrBar>
+          <span style={{ opacity: 0.4, fontSize: "9pt", letterSpacing: "2px" }}>
+            MICR ZONE - DO NOT PRINT
+          </span>
+        </MicrBar>
+      ) : null}
     </ChequeWrapper>
   );
 }

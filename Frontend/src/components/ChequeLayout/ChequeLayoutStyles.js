@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 
 const addMm = (base, delta = 0) => `calc(${base || "0mm"} + ${delta}mm)`;
 const subtractMm = (base, delta = 0) => `calc(${base || "0mm"} - ${delta}mm)`;
@@ -8,13 +8,17 @@ export const ChequeWrapper = styled.div`
   display: block;
   width: 202mm;
   height: 92mm;
-  background: #fffef8;
+  background: ${({ $backgroundImage }) =>
+    $backgroundImage
+      ? `#f5fbff url(${$backgroundImage}) center / 100% 100% no-repeat`
+      : "#fffef8"};
   border: 1px solid #ccc;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
   overflow: hidden;
   font-family: "Courier New", Courier, monospace;
 
   @media print {
+    background: transparent !important;
     border: none;
     box-shadow: none;
     margin: 0;
@@ -27,18 +31,28 @@ export const ChequeWrapper = styled.div`
 
 export const DateField = styled.div`
   position: absolute;
-  top: ${({ $top, $offsetY }) => addMm($top || "9mm", $offsetY)};
+  top: ${({ $top, $offsetY }) => addMm($top || "8mm", $offsetY)};
   right: ${({ $right, $offsetX }) => subtractMm($right || "12mm", $offsetX)};
   width: ${({ $width }) => $width || "34mm"};
   display: flex;
-  justify-content: space-between;
-  font-size: 11pt;
+  justify-content: flex-start;
+  align-items: center;
+  white-space: nowrap;
+  font-size: ${({ $fontSize }) => $fontSize || "11pt"};
   font-weight: bold;
   color: #111;
 
   span {
-    min-width: 3mm;
-    text-align: center;
+    flex: 0 0 ${({ $charWidth }) => $charWidth || "3mm"};
+    width: ${({ $charWidth }) => $charWidth || "3mm"};
+    margin-right: ${({ $gap }) => $gap || "0mm"};
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  span:last-child {
+    margin-right: 0;
   }
 `;
 
@@ -60,11 +74,13 @@ export const PayeeLine = styled.div`
   top: ${({ $top, $offsetY }) => addMm($top || "26mm", $offsetY)};
   left: ${({ $left, $offsetX }) => addMm($left || "28mm", $offsetX)};
   width: ${({ $width }) => $width || "150mm"};
-  border-bottom: 1px solid #555;
-  font-size: 11pt;
+  border-bottom: ${({ $showGuideLine }) =>
+    $showGuideLine === false ? "none" : "1px solid #555"};
+  font-size: ${({ $fontSize }) => $fontSize || "11pt"};
   font-weight: bold;
   color: #111;
-  padding-bottom: 0.5mm;
+  padding-bottom: ${({ $showGuideLine }) =>
+    $showGuideLine === false ? "0" : "0.5mm"};
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -75,29 +91,44 @@ export const AmountWordsField = styled.div`
   top: ${({ $top, $offsetY }) => addMm($top || "41mm", $offsetY)};
   left: ${({ $left, $offsetX }) => addMm($left || "20mm", $offsetX)};
   width: ${({ $width }) => $width || "125mm"};
-  font-size: 10pt;
+  font-size: ${({ $fontSize }) => $fontSize || "10pt"};
   font-weight: bold;
   color: #111;
   line-height: 1.4;
-  border-bottom: 1px solid #555;
-  padding-bottom: 0.5mm;
+  border-bottom: ${({ $showGuideLine }) =>
+    $showGuideLine === false ? "none" : "1px solid #555"};
+  padding-bottom: ${({ $showGuideLine }) =>
+    $showGuideLine === false ? "0" : "0.5mm"};
   word-break: break-word;
 `;
 
 export const AmountBox = styled.div`
   position: absolute;
   top: ${({ $top, $offsetY }) => addMm($top || "40mm", $offsetY)};
-  right: ${({ $right, $offsetX }) => subtractMm($right || "12mm", $offsetX)};
+  ${({ $left, $right, $offsetX }) =>
+    $left
+      ? css`
+          left: ${addMm($left, $offsetX)};
+          right: auto;
+        `
+      : css`
+          right: ${subtractMm($right || "12mm", $offsetX)};
+          left: auto;
+        `}
+  width: ${({ $width }) => $width || "auto"};
   min-width: ${({ $minWidth }) => $minWidth || "28mm"};
-  border: 1.5px solid #111;
-  padding: 1mm 2mm;
-  font-size: 12pt;
+  border: ${({ $showBorder }) =>
+    $showBorder === false ? "none" : "1.5px solid #111"};
+  padding: ${({ $showBorder }) => ($showBorder === false ? "0" : "1mm 2mm")};
+  font-size: ${({ $fontSize }) => $fontSize || "12pt"};
   font-weight: bold;
   color: #111;
   text-align: right;
-  background: #fffef8;
+  background: ${({ $showBorder }) =>
+    $showBorder === false ? "transparent" : "#fffef8"};
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 1mm;
 `;
 
