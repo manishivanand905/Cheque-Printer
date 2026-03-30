@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+let cachedConnectionPromise = null;
 
 function normalizeEnvValue(value) {
   if (typeof value !== "string") {
@@ -102,12 +103,39 @@ const connectDB = async () => {
     );
   }
 
+  if (mongoose.connection.readyState === 1) {
+    return mongoose.connection;
+  }
+
+  if (cachedConnectionPromise) {
+    return cachedConnectionPromise;
+  }
+
   try {
-    await mongoose.connect(mongoUri, {
-      serverSelectionTimeoutMS: 15000,
-    });
-    console.log(`MongoDB connected: ${describeMongoUri(mongoUri)}`);
+    cachedConnectionPromise = mongoose
+      .connect(mongoUri, {
+        serverSelectionTimeoutMS: 15000,
+      })
+      .then(() => {
+        console.log(`MongoDB connected: ${describeMongoUri(mongoUri)}`);
+        return mongoose.connection;
+      })
+      .catch((error) => {
+        cachedConnectionPromise = null;
+
+        if (error?.code === 8000 || /authentication failed/i.test(error?.message || "")) {
+          throw new Error(
+            "MongoDB authentication failed. On Render, verify the Atlas credentials in MONGODB_URI or set MONGODB_HOSTS, MONGODB_USERNAME, MONGODB_PASSWORD, and optionally MONGODB_DB_NAME. If your password has special characters, use the separate username/password env vars so it is encoded safely.",
+          );
+        }
+
+        throw error;
+      });
+
+    return await cachedConnectionPromise;
   } catch (error) {
+    cachedConnectionPromise = null;
+
     if (error?.code === 8000 || /authentication failed/i.test(error?.message || "")) {
       throw new Error(
         "MongoDB authentication failed. On Render, verify the Atlas credentials in MONGODB_URI or set MONGODB_HOSTS, MONGODB_USERNAME, MONGODB_PASSWORD, and optionally MONGODB_DB_NAME. If your password has special characters, use the separate username/password env vars so it is encoded safely.",
