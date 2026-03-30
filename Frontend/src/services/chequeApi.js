@@ -1,5 +1,22 @@
-const API_BASE_URL =
-  process.env.REACT_APP_API_BASE_URL || "http://localhost:5000/api";
+function normalizeApiBaseUrl(value) {
+  return value ? value.replace(/\/+$/, "") : value;
+}
+
+function getApiBaseUrl() {
+  const configuredUrl = normalizeApiBaseUrl(
+    process.env.REACT_APP_API_BASE_URL?.trim(),
+  );
+
+  if (configuredUrl) {
+    return configuredUrl;
+  }
+
+  return process.env.NODE_ENV === "production"
+    ? "/api"
+    : "http://localhost:5000/api";
+}
+
+const API_BASE_URL = getApiBaseUrl();
 
 const AUTH_STORAGE_KEY = "cheque_printer_auth";
 
