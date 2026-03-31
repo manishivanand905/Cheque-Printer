@@ -9,27 +9,40 @@ const allowedOrigins = (process.env.CLIENT_URL || "")
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
+const vercelPreviewPattern = /^https:\/\/[a-z0-9-]+\.vercel\.app$/i;
 
-app.use(
-  cors({
-    origin(origin, callback) {
-      if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
-        callback(null, true);
-        return;
-      }
+function isAllowedOrigin(origin) {
+  if (!origin || allowedOrigins.length === 0) {
+    return true;
+  }
 
-      callback(new Error("Origin not allowed by CORS."));
-    },
-  }),
-);
+  return allowedOrigins.includes(origin) || vercelPreviewPattern.test(origin);
+}
+
+const corsOptions = {
+  origin(origin, callback) {
+    callback(null, isAllowedOrigin(origin));
+  },
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
+app.options(/.*/, cors(corsOptions));
 app.use(express.json({ limit: "2mb" }));
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
 });
+app.get("/health", (req, res) => {
+  res.json({ status: "ok" });
+});
 
 app.use("/api/auth", authRoutes);
+app.use("/auth", authRoutes);
 app.use("/api/cheques", chequeRoutes);
+app.use("/cheques", chequeRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

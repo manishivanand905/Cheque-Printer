@@ -208,6 +208,155 @@ const MiniButton = styled.button`
   }
 `;
 
+const IconButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(241, 201, 107, 0.28);
+  background: rgba(241, 201, 107, 0.08);
+  color: #f8e7bc;
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    border-color: rgba(241, 201, 107, 0.6);
+    background: rgba(241, 201, 107, 0.14);
+  }
+`;
+
+const ModalBackdrop = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(5, 8, 13, 0.7);
+  backdrop-filter: blur(12px);
+`;
+
+const ModalCard = styled.div`
+  width: min(1080px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 26px;
+  padding: 24px;
+  background:
+    radial-gradient(circle at top right, rgba(241, 201, 107, 0.16), transparent 34%),
+    rgba(12, 15, 22, 0.97);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.45);
+`;
+
+const ModalHeader = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+
+  h3 {
+    color: #fff0c5;
+    font-size: 1rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  p {
+    color: rgba(244, 239, 230, 0.62);
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+`;
+
+const CloseButton = styled.button`
+  padding: 9px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: #f5efe1;
+  cursor: pointer;
+`;
+
+const ModalBody = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+
+const PreviewFrame = styled.div`
+  border-radius: 22px;
+  padding: 10px 14px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)),
+    rgba(255, 255, 255, 0.02);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const PreviewScaler = styled.div`
+  width: fit-content;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: scale(0.82);
+  transform-origin: top center;
+
+  @media (max-width: 720px) {
+    transform: scale(0.6);
+    margin-left: -58px;
+    margin-right: -58px;
+  }
+`;
+
+const DetailPanel = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+
+  @media (max-width: 980px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const DetailCard = styled.div`
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  min-height: 72px;
+`;
+
+const DetailLabel = styled.div`
+  color: rgba(244, 239, 230, 0.58);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+`;
+
+const DetailValue = styled.div`
+  color: #f5efe1;
+  font-size: 0.92rem;
+  line-height: 1.35;
+  word-break: break-word;
+`;
+
 const EmptyState = styled.p`
   color: rgba(244, 239, 230, 0.64);
   font-size: 0.9rem;
@@ -280,6 +429,7 @@ function App() {
   const [bulkEntries, setBulkEntries] = useState([]);
   const [history, setHistory] = useState([]);
   const [historySearch, setHistorySearch] = useState("");
+  const [selectedHistoryRecord, setSelectedHistoryRecord] = useState(null);
   const [status, setStatus] = useState("");
   const [statusTone, setStatusTone] = useState("success");
   const [busy, setBusy] = useState(false);
@@ -296,6 +446,21 @@ function App() {
     window.addEventListener("afterprint", handleAfterPrint);
     return () => window.removeEventListener("afterprint", handleAfterPrint);
   }, []);
+
+  useEffect(() => {
+    if (!selectedHistoryRecord) {
+      return undefined;
+    }
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        setSelectedHistoryRecord(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [selectedHistoryRecord]);
 
   async function bootstrapAuth() {
     const stored = readStoredAuth();
@@ -530,11 +695,22 @@ function App() {
     setBulkEntries((current) => current.filter((entry) => entry.id !== entryId));
   }
 
+  function handleOpenHistoryPreview(record) {
+    setSelectedHistoryRecord(record);
+  }
+
+  function handleCloseHistoryPreview() {
+    setSelectedHistoryRecord(null);
+  }
+
   const filteredHistory = history.filter((record) =>
     matchesHistorySearch(record, historySearch),
   );
   const amountWords = numberToWordsIndian(data.amount);
   const recordsToPrint = printBatch.length ? printBatch : [sanitizeChequeRecord(data)];
+  const selectedHistoryAmountWords = selectedHistoryRecord
+    ? numberToWordsIndian(selectedHistoryRecord.amount)
+    : "";
 
   return (
     <>
@@ -701,6 +877,7 @@ function App() {
                             <th>Amount</th>
                             <th>Date</th>
                             <th>Printed</th>
+                            <th>View</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -712,6 +889,30 @@ function App() {
                               <td>{record.amount}</td>
                               <td>{formatChequeDate(record.date)}</td>
                               <td>{new Date(record.lastPrintedAt).toLocaleString()}</td>
+                              <td>
+                                <IconButton
+                                  type="button"
+                                  onClick={() => handleOpenHistoryPreview(record)}
+                                  aria-label={`View cheque ${record.chequeNo}`}
+                                  title="View cheque preview"
+                                >
+                                  <svg
+                                    width="18"
+                                    height="18"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    aria-hidden="true"
+                                  >
+                                    <path
+                                      d="M2 12C4.4 7.8 8 5.7 12 5.7C16 5.7 19.6 7.8 22 12C19.6 16.2 16 18.3 12 18.3C8 18.3 4.4 16.2 2 12Z"
+                                      stroke="currentColor"
+                                      strokeWidth="1.8"
+                                    />
+                                    <circle cx="12" cy="12" r="3.2" stroke="currentColor" strokeWidth="1.8" />
+                                  </svg>
+                                </IconButton>
+                              </td>
                             </tr>
                           ))}
                         </tbody>
@@ -737,6 +938,69 @@ function App() {
           </MainLayout>
         )}
       </AppShell>
+
+      {selectedHistoryRecord ? (
+        <ModalBackdrop className="no-print" onClick={handleCloseHistoryPreview}>
+          <ModalCard onClick={(event) => event.stopPropagation()}>
+            <ModalHeader>
+              <div>
+                <h3>Cheque Preview</h3>
+                <p>
+                  Review the saved cheque layout and details for cheque no.{" "}
+                  {selectedHistoryRecord.chequeNo}.
+                </p>
+              </div>
+              <CloseButton type="button" onClick={handleCloseHistoryPreview}>
+                Close
+              </CloseButton>
+            </ModalHeader>
+
+            <ModalBody>
+              <PreviewFrame>
+                <PreviewScaler>
+                  <ChequeLayout data={selectedHistoryRecord} />
+                </PreviewScaler>
+              </PreviewFrame>
+
+              <DetailPanel>
+                <DetailCard>
+                  <DetailLabel>Name</DetailLabel>
+                  <DetailValue>{selectedHistoryRecord.payee}</DetailValue>
+                </DetailCard>
+
+                <DetailCard>
+                  <DetailLabel>Amount</DetailLabel>
+                  <DetailValue>{selectedHistoryRecord.amount}</DetailValue>
+                </DetailCard>
+
+                <DetailCard>
+                  <DetailLabel>Date</DetailLabel>
+                  <DetailValue>{formatChequeDate(selectedHistoryRecord.date)}</DetailValue>
+                </DetailCard>
+
+                <DetailCard>
+                  <DetailLabel>Bank</DetailLabel>
+                  <DetailValue>{selectedHistoryRecord.bank}</DetailValue>
+                </DetailCard>
+
+                <DetailCard>
+                  <DetailLabel>Printed At</DetailLabel>
+                  <DetailValue>
+                    {new Date(selectedHistoryRecord.lastPrintedAt).toLocaleString()}
+                  </DetailValue>
+                </DetailCard>
+
+                {selectedHistoryAmountWords ? (
+                  <DetailCard>
+                    <DetailLabel>Amount In Words</DetailLabel>
+                    <DetailValue>{selectedHistoryAmountWords}</DetailValue>
+                  </DetailCard>
+                ) : null}
+              </DetailPanel>
+            </ModalBody>
+          </ModalCard>
+        </ModalBackdrop>
+      ) : null}
     </>
   );
 }

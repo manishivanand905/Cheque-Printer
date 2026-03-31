@@ -1,5 +1,5 @@
-const app = require("../Backend/app");
-const connectDB = require("../Backend/config/db");
+const app = require("../app");
+const connectDB = require("../config/db");
 
 let readyPromise = null;
 

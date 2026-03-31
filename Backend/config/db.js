@@ -85,13 +85,31 @@ function resolveMongoUri() {
 }
 
 function describeMongoUri(mongoUri) {
-  try {
-    const parsed = new URL(mongoUri);
-    const databaseName = parsed.pathname.replace(/^\//, "") || "(default)";
-    return `${parsed.protocol}//${parsed.host}/${databaseName}`;
-  } catch (error) {
-    return "invalid MongoDB URI";
+  if (typeof mongoUri !== "string") {
+    return "MongoDB URI unavailable";
   }
+
+  const trimmed = mongoUri.trim();
+  const protocolSeparatorIndex = trimmed.indexOf("://");
+
+  if (protocolSeparatorIndex === -1) {
+    return "MongoDB URI format not recognized";
+  }
+
+  const protocol = trimmed.slice(0, protocolSeparatorIndex + 3);
+  const remainder = trimmed.slice(protocolSeparatorIndex + 3);
+  const credentialsSeparatorIndex = remainder.lastIndexOf("@");
+  const hostAndPath = credentialsSeparatorIndex === -1
+    ? remainder
+    : remainder.slice(credentialsSeparatorIndex + 1);
+  const [hostPart, pathAndQuery = ""] = hostAndPath.split("/", 2);
+  const databaseName = pathAndQuery.split("?")[0] || "(default)";
+
+  if (!hostPart) {
+    return "MongoDB URI format not recognized";
+  }
+
+  return `${protocol}${hostPart}/${databaseName}`;
 }
 
 const connectDB = async () => {
@@ -117,7 +135,7 @@ const connectDB = async () => {
         serverSelectionTimeoutMS: 15000,
       })
       .then(() => {
-        console.log(`MongoDB connected: ${describeMongoUri(mongoUri)}`);
+        console.log("MongoDB connected");
         return mongoose.connection;
       })
       .catch((error) => {
