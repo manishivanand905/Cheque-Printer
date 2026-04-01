@@ -45,8 +45,8 @@ const GlobalStyle = createGlobalStyle`
 
   @media print {
     html, body, #root {
-      width: 202mm;
-      min-height: 92mm;
+      width: 204mm;
+      min-height: 93mm;
       overflow: visible;
       margin: 0;
       padding: 0;
@@ -68,7 +68,7 @@ const GlobalStyle = createGlobalStyle`
     .preview-panel,
     .print-root,
     .print-sheet {
-      width: 202mm !important;
+      width: 204mm !important;
       min-height: auto !important;
       margin: 0 !important;
       padding: 0 !important;
@@ -87,7 +87,7 @@ const GlobalStyle = createGlobalStyle`
     }
 
     .print-sheet {
-      height: 92mm !important;
+      height: 93mm !important;
       page-break-after: always;
       break-after: page;
     }
@@ -98,7 +98,7 @@ const GlobalStyle = createGlobalStyle`
     }
 
     @page {
-      size: 202mm 92mm;
+      size: 204mm 93mm;
       margin: 0;
     }
   }

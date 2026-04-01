@@ -43,11 +43,16 @@ function ChequeLayout({ data }) {
   const dateDisplay = date ? date.split("-").reverse().join("") : "________";
 
   return (
-    <ChequeWrapper $backgroundImage={template.backgroundImage}>
+    <ChequeWrapper
+      $backgroundImage={template.backgroundImage}
+      $width={template.chequeWidth}
+      $height={template.chequeHeight}
+    >
       <DateField
         $top={template.dateTop}
         $right={template.dateRight}
         $width={template.dateWidth}
+        $height={template.dateHeight}
         $gap={template.dateGap}
         $charWidth={template.dateCharWidth}
         $fontSize={template.dateFontSize}
@@ -74,6 +79,7 @@ function ChequeLayout({ data }) {
         $top={template.payeeTop}
         $left={template.payeeLeft}
         $width={template.payeeWidth}
+        $height={template.payeeHeight}
         $fontSize={template.payeeFontSize}
         $showGuideLine={showGuideLines}
         $offsetX={horizontalOffset}
@@ -86,6 +92,7 @@ function ChequeLayout({ data }) {
         $top={template.amountWordsTop}
         $left={template.amountWordsLeft}
         $width={template.amountWordsWidth}
+        $height={template.amountWordsHeight}
         $fontSize={template.amountWordsFontSize}
         $showGuideLine={showGuideLines}
         $offsetX={horizontalOffset}
@@ -99,6 +106,7 @@ function ChequeLayout({ data }) {
         $left={template.amountBoxLeft}
         $right={template.amountBoxRight}
         $width={template.amountBoxWidth}
+        $height={template.amountBoxHeight}
         $minWidth={template.amountBoxMinWidth}
         $fontSize={template.amountBoxFontSize}
         $showBorder={showAmountBoxBorder}

@@ -6,8 +6,8 @@ const subtractMm = (base, delta = 0) => `calc(${base || "0mm"} - ${delta}mm)`;
 export const ChequeWrapper = styled.div`
   position: relative;
   display: block;
-  width: 202mm;
-  height: 92mm;
+  width: ${({ $width }) => $width || "204mm"};
+  height: ${({ $height }) => $height || "93mm"};
   background: ${({ $backgroundImage }) =>
     $backgroundImage
       ? `#f5fbff url(${$backgroundImage}) center / 100% 100% no-repeat`
@@ -34,6 +34,7 @@ export const DateField = styled.div`
   top: ${({ $top, $offsetY }) => addMm($top || "8mm", $offsetY)};
   right: ${({ $right, $offsetX }) => subtractMm($right || "12mm", $offsetX)};
   width: ${({ $width }) => $width || "34mm"};
+  height: ${({ $height }) => $height || "5mm"};
   display: flex;
   justify-content: flex-start;
   align-items: center;
@@ -74,6 +75,7 @@ export const PayeeLine = styled.div`
   top: ${({ $top, $offsetY }) => addMm($top || "26mm", $offsetY)};
   left: ${({ $left, $offsetX }) => addMm($left || "28mm", $offsetX)};
   width: ${({ $width }) => $width || "150mm"};
+  height: ${({ $height }) => $height || "5mm"};
   border-bottom: ${({ $showGuideLine }) =>
     $showGuideLine === false ? "none" : "1px solid #555"};
   font-size: ${({ $fontSize }) => $fontSize || "11pt"};
@@ -81,6 +83,7 @@ export const PayeeLine = styled.div`
   color: #111;
   padding-bottom: ${({ $showGuideLine }) =>
     $showGuideLine === false ? "0" : "0.5mm"};
+  line-height: ${({ $height }) => $height || "5mm"};
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -91,6 +94,7 @@ export const AmountWordsField = styled.div`
   top: ${({ $top, $offsetY }) => addMm($top || "41mm", $offsetY)};
   left: ${({ $left, $offsetX }) => addMm($left || "20mm", $offsetX)};
   width: ${({ $width }) => $width || "125mm"};
+  min-height: ${({ $height }) => $height || "15mm"};
   font-size: ${({ $fontSize }) => $fontSize || "10pt"};
   font-weight: bold;
   color: #111;
@@ -116,6 +120,7 @@ export const AmountBox = styled.div`
           left: auto;
         `}
   width: ${({ $width }) => $width || "auto"};
+  height: ${({ $height }) => $height || "8mm"};
   min-width: ${({ $minWidth }) => $minWidth || "28mm"};
   border: ${({ $showBorder }) =>
     $showBorder === false ? "none" : "1.5px solid #111"};
