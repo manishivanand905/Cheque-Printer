@@ -32,7 +32,6 @@ export function sanitizeChequeRecord(record = {}) {
 export function validateChequeRecord(record) {
   const item = sanitizeChequeRecord(record);
 
-  if (!item.chequeNo) return "Cheque number is required.";
   if (!item.payee) return "Payee name is required.";
   if (!item.amount || Number.isNaN(Number(item.amount)) || Number(item.amount) <= 0) {
     return "Enter a valid amount greater than zero.";

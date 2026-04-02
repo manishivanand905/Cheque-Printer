@@ -2,13 +2,12 @@ const ChequeRecord = require("../models/ChequeRecord");
 
 function normalizePayload(payload = {}, source = "single") {
   const bank = `${payload.bank || ""}`.trim().toUpperCase();
-  const chequeNo = `${payload.chequeNo || ""}`.trim();
+  const chequeNo = `${payload.chequeNo || ""}`.trim() || undefined;
   const payee = `${payload.payee || ""}`.trim();
   const amount = Number(payload.amount);
   const date = `${payload.date || ""}`.trim();
 
   if (!bank) throw new Error("Bank is required.");
-  if (!chequeNo) throw new Error("Cheque number is required.");
   if (!payee) throw new Error("Payee name is required.");
   if (!date) throw new Error("Cheque date is required.");
   if (Number.isNaN(amount) || amount <= 0) {
@@ -30,11 +29,13 @@ async function upsertRecord(payload, source) {
   const normalized = normalizePayload(payload, source);
   const userId = payload.userId;
   const now = new Date();
-  const existing = await ChequeRecord.findOne({
-    user: userId,
-    bank: normalized.bank,
-    chequeNo: normalized.chequeNo,
-  });
+  const existing = normalized.chequeNo
+    ? await ChequeRecord.findOne({
+      user: userId,
+      bank: normalized.bank,
+      chequeNo: normalized.chequeNo,
+    })
+    : null;
 
   if (!existing) {
     return ChequeRecord.create({

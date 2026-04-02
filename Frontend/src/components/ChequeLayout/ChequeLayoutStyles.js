@@ -15,7 +15,7 @@ export const ChequeWrapper = styled.div`
   border: 1px solid #ccc;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
   overflow: hidden;
-  font-family: "Courier New", Courier, monospace;
+  font-family: "Times New Roman", Times, serif;
 
   @media print {
     background: transparent !important;
@@ -32,7 +32,16 @@ export const ChequeWrapper = styled.div`
 export const DateField = styled.div`
   position: absolute;
   top: ${({ $top, $offsetY }) => addMm($top || "8mm", $offsetY)};
-  right: ${({ $right, $offsetX }) => subtractMm($right || "12mm", $offsetX)};
+  ${({ $left, $right, $offsetX }) =>
+    $left
+      ? css`
+          left: ${addMm($left, $offsetX)};
+          right: auto;
+        `
+      : css`
+          right: ${subtractMm($right || "12mm", $offsetX)};
+          left: auto;
+        `}
   width: ${({ $width }) => $width || "34mm"};
   height: ${({ $height }) => $height || "5mm"};
   display: flex;

@@ -417,11 +417,17 @@ function mergeQueueEntries(existingEntries, newEntries) {
 
   [...existingEntries, ...newEntries].forEach((entry) => {
     const normalized = createBulkQueueEntry(entry);
-    const key = `${normalized.bank}-${normalized.chequeNo}`;
+    const key = normalized.chequeNo
+      ? `${normalized.bank}-${normalized.chequeNo}`
+      : normalized.id;
     map.set(key, normalized);
   });
 
   return Array.from(map.values());
+}
+
+function describeCheque(record) {
+  return record?.chequeNo ? `Cheque ${record.chequeNo}` : "Cheque without a number";
 }
 
 function App() {
@@ -524,7 +530,9 @@ function App() {
     setBusy(true);
     try {
       const response = await registerUser(payload);
-      handleAuthSuccess(response, "Account created and logged in successfully.");
+      const successMessage = "Successfully registered.";
+      handleAuthSuccess(response, successMessage);
+      window.alert(successMessage);
     } catch (error) {
       showMessage(error.message, "error");
     } finally {
@@ -598,7 +606,7 @@ function App() {
     try {
       await saveChequeRecord(record);
       await loadHistory();
-      showMessage(`Cheque ${record.chequeNo} saved and ready to print.`);
+      showMessage(`${describeCheque(record)} saved and ready to print.`);
       await openPrintDialog([record]);
     } catch (error) {
       showMessage(error.message, "error");
@@ -621,7 +629,7 @@ function App() {
 
     const record = createBulkQueueEntry(data);
     setBulkEntries((current) => mergeQueueEntries(current, [record]));
-    showMessage(`Cheque ${record.chequeNo} added to the bulk list.`);
+    showMessage(`${describeCheque(record)} added to the bulk list.`);
   }
 
   async function handleUploadBulk(file) {
@@ -662,7 +670,7 @@ function App() {
     const invalidRecord = bulkEntries.find((entry) => validateChequeRecord(entry));
     if (invalidRecord) {
       showMessage(
-        `Cheque ${invalidRecord.chequeNo || "(missing number)"} needs complete data before bulk printing.`,
+        `${describeCheque(invalidRecord)} needs complete data before bulk printing.`,
         "error",
       );
       return;
@@ -688,7 +696,7 @@ function App() {
       ...current,
       ...sanitizeChequeRecord(entry),
     }));
-    showMessage(`Loaded cheque ${entry.chequeNo} into the editor.`);
+    showMessage(`Loaded ${describeCheque(entry).toLowerCase()} into the editor.`);
   }
 
   function handleRemoveQueueEntry(entryId) {
@@ -946,8 +954,9 @@ function App() {
               <div>
                 <h3>Cheque Preview</h3>
                 <p>
-                  Review the saved cheque layout and details for cheque no.{" "}
-                  {selectedHistoryRecord.chequeNo}.
+                  {selectedHistoryRecord.chequeNo
+                    ? `Review the saved cheque layout and details for cheque no. ${selectedHistoryRecord.chequeNo}.`
+                    : "Review the saved cheque layout and details for this cheque."}
                 </p>
               </div>
               <CloseButton type="button" onClick={handleCloseHistoryPreview}>

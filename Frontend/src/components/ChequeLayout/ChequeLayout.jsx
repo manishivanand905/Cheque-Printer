@@ -50,6 +50,7 @@ function ChequeLayout({ data }) {
     >
       <DateField
         $top={template.dateTop}
+        $left={template.dateLeft}
         $right={template.dateRight}
         $width={template.dateWidth}
         $height={template.dateHeight}
@@ -114,7 +115,7 @@ function ChequeLayout({ data }) {
         $offsetY={verticalOffset}
       >
         {template.showAmountPrefix !== false ? (
-          <span style={{ fontSize: "10pt" }}>Rs.</span>
+          <span style={{ fontSize: "10pt" }}></span>
         ) : null}
         <span>{amountFormatted || ""}</span>
       </AmountBox>

@@ -18,8 +18,6 @@ import {
 } from "./InputFormStyles";
 import bankTemplates from "../../templates/bankTemplates";
 
-const BANKS = Object.keys(bankTemplates);
-
 function InputForm({
   data,
   onChange,
@@ -34,6 +32,7 @@ function InputForm({
   const handleChange = (field, value) => {
     onChange({ ...data, [field]: value });
   };
+  const banks = Object.keys(bankTemplates);
 
   const handleSignature = (event) => {
     const file = event.target.files[0];
@@ -57,7 +56,7 @@ function InputForm({
     <div>
       <SectionLabel>Bank</SectionLabel>
       <BankGrid>
-        {BANKS.map((bankCode) => (
+        {banks.map((bankCode) => (
           <BankButton
             key={bankCode}
             $active={data.bank === bankCode}
@@ -79,7 +78,7 @@ function InputForm({
           value={data.chequeNo}
           onChange={(event) => handleChange("chequeNo", event.target.value)}
         />
-        <FieldHint>Saved in history only, not printed.</FieldHint>
+        <FieldHint>Optional. Saved in history only, not printed.</FieldHint>
       </FormGroup>
 
       <FormGroup>

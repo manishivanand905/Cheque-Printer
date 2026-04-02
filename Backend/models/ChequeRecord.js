@@ -16,7 +16,6 @@ const chequeRecordSchema = new mongoose.Schema(
     },
     chequeNo: {
       type: String,
-      required: true,
       trim: true,
     },
     payee: {
@@ -61,6 +60,14 @@ const chequeRecordSchema = new mongoose.Schema(
   },
 );
 
-chequeRecordSchema.index({ user: 1, bank: 1, chequeNo: 1 }, { unique: true });
+chequeRecordSchema.index(
+  { user: 1, bank: 1, chequeNo: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      chequeNo: { $exists: true, $gt: "" },
+    },
+  },
+);
 
 module.exports = mongoose.model("ChequeRecord", chequeRecordSchema);
