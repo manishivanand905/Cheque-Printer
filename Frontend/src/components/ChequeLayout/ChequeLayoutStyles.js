@@ -8,17 +8,14 @@ export const ChequeWrapper = styled.div`
   display: block;
   width: ${({ $width }) => $width || "204mm"};
   height: ${({ $height }) => $height || "93mm"};
-  background: ${({ $backgroundImage }) =>
-    $backgroundImage
-      ? `#f5fbff url(${$backgroundImage}) center / 100% 100% no-repeat`
-      : "#fffef8"};
+  background: #fffef8;
   border: 1px solid #ccc;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
   overflow: hidden;
   font-family: "Times New Roman", Times, serif;
 
   @media print {
-    background: transparent !important;
+    background: #fffef8 !important;
     border: none;
     box-shadow: none;
     margin: 0;
@@ -29,8 +26,25 @@ export const ChequeWrapper = styled.div`
   }
 `;
 
+export const ChequeBackground = styled.img`
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  object-position: center;
+  pointer-events: none;
+  user-select: none;
+  opacity: 1;
+
+  @media print {
+    display: none !important;
+  }
+`;
+
 export const DateField = styled.div`
   position: absolute;
+  z-index: 1;
   top: ${({ $top, $offsetY }) => addMm($top || "8mm", $offsetY)};
   ${({ $left, $right, $offsetX }) =>
     $left
@@ -68,19 +82,40 @@ export const DateField = styled.div`
 
 export const AcPayeeStamp = styled.div`
   position: absolute;
+  z-index: 1;
   top: ${({ $top, $offsetY }) => addMm($top || "18mm", $offsetY)};
   left: ${({ $left, $offsetX }) => addMm($left || "14mm", $offsetX)};
-  border: 2px solid #111;
-  padding: 1mm 2mm;
+  transform: rotate(-45deg);
+  transform-origin: center center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1mm;
+  padding: -1mm 3mm;
   font-size: 7pt;
   font-weight: bold;
   color: #111;
   line-height: 1.3;
   text-align: center;
+
+  span:first-child {
+    border-top: 1.5px solid #111;
+    padding-top: 1mm;
+    width: 100%;
+    text-align: center;
+  }
+
+  span:last-child {
+    border-bottom: 1.5px solid #111;
+    padding-bottom: 1mm;
+    width: 100%;
+    text-align: center;
+  }
 `;
 
 export const PayeeLine = styled.div`
   position: absolute;
+  z-index: 1;
   top: ${({ $top, $offsetY }) => addMm($top || "26mm", $offsetY)};
   left: ${({ $left, $offsetX }) => addMm($left || "28mm", $offsetX)};
   width: ${({ $width }) => $width || "150mm"};
@@ -100,6 +135,7 @@ export const PayeeLine = styled.div`
 
 export const AmountWordsField = styled.div`
   position: absolute;
+  z-index: 1;
   top: ${({ $top, $offsetY }) => addMm($top || "41mm", $offsetY)};
   left: ${({ $left, $offsetX }) => addMm($left || "20mm", $offsetX)};
   width: ${({ $width }) => $width || "125mm"};
@@ -117,6 +153,7 @@ export const AmountWordsField = styled.div`
 
 export const AmountBox = styled.div`
   position: absolute;
+  z-index: 1;
   top: ${({ $top, $offsetY }) => addMm($top || "40mm", $offsetY)};
   ${({ $left, $right, $offsetX }) =>
     $left
@@ -148,6 +185,7 @@ export const AmountBox = styled.div`
 
 export const MicrBar = styled.div`
   position: absolute;
+  z-index: 1;
   bottom: 0;
   left: 0;
   right: 0;
@@ -169,6 +207,7 @@ export const MicrBar = styled.div`
 
 export const SignatureLine = styled.div`
   position: absolute;
+  z-index: 1;
   bottom: ${({ $offsetY }) => addMm("18mm", -$offsetY)};
   right: ${({ $offsetX }) => subtractMm("18mm", $offsetX)};
   width: 50mm;
@@ -181,6 +220,7 @@ export const SignatureLine = styled.div`
 
 export const SignatureImage = styled.img`
   position: absolute;
+  z-index: 1;
   bottom: ${({ $offsetY }) => addMm("19mm", -$offsetY)};
   right: ${({ $offsetX }) => subtractMm("18mm", $offsetX)};
   width: 50mm;

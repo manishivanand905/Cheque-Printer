@@ -1,6 +1,7 @@
 import React from "react";
 import {
   ChequeWrapper,
+  ChequeBackground,
   DateField,
   AcPayeeStamp,
   PayeeLine,
@@ -16,7 +17,7 @@ import {
 } from "../../utils/numberToWords";
 import bankTemplates from "../../templates/bankTemplates";
 
-function ChequeLayout({ data }) {
+function ChequeLayout({ data, mode = "preview" }) {
   const {
     bank,
     payee,
@@ -27,13 +28,18 @@ function ChequeLayout({ data }) {
     offsetX = 0,
     offsetY = 0,
   } = data;
-  const template = bankTemplates[bank] || bankTemplates.SBI;
+  const bankTemplate = bankTemplates[bank] || bankTemplates.SBI;
+  const template =
+    mode === "print"
+      ? bankTemplate.printDimensions
+      : bankTemplate.previewDimensions;
   const horizontalOffset = Number(offsetX) || 0;
   const verticalOffset = Number(offsetY) || 0;
   const showGuideLines = template.showGuideLines !== false;
   const showAmountBoxBorder = template.showAmountBoxBorder !== false;
   const showSignatureGuide = template.showSignatureGuide !== false;
   const showMicrHint = template.showMicrHint !== false;
+  const backgroundImage = bankTemplate.backgroundImage;
 
   const amountWords = numberToWordsIndian(amount);
   const amountFormatted = amount
@@ -44,10 +50,20 @@ function ChequeLayout({ data }) {
 
   return (
     <ChequeWrapper
-      $backgroundImage={template.backgroundImage}
       $width={template.chequeWidth}
       $height={template.chequeHeight}
     >
+      {backgroundImage && mode === "preview" ? (
+        <ChequeBackground
+          src={backgroundImage}
+          alt=""
+          aria-hidden="true"
+          onError={(event) => {
+            event.currentTarget.style.display = "none";
+          }}
+        />
+      ) : null}
+
       <DateField
         $top={template.dateTop}
         $left={template.dateLeft}
@@ -72,7 +88,7 @@ function ChequeLayout({ data }) {
           $offsetX={horizontalOffset}
           $offsetY={verticalOffset}
         >
-          A/C PAYEE
+          <span> A/C PAYEE </span>
         </AcPayeeStamp>
       )}
 

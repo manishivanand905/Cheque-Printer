@@ -213,8 +213,10 @@ function InputForm({
       </GhostButton>
 
       <Disclaimer>
-        Print with `Margins: None`, `Scale: 100%`, and turn off `Headers and
-        footers`. Use X/Y to fine-tune.
+        The app now opens a cheque-only print sheet sized for the cheque. Keep
+        `Margins: None` and `Scale: 100%`. If your printer driver shows paper
+        source options, choose `Envelope` or your custom cheque feed and keep
+        printing on `Single-sided`. Use X/Y to fine-tune.
       </Disclaimer>
     </div>
   );

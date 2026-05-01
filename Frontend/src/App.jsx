@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import styled, { createGlobalStyle } from "styled-components";
 import ChequeLayout from "./components/ChequeLayout/ChequeLayout";
 import InputForm from "./components/InputForm/InputForm";
@@ -17,6 +18,7 @@ import {
 } from "./components/InputForm/InputFormStyles";
 import { numberToWordsIndian } from "./utils/numberToWords";
 import { parseBulkFile } from "./utils/bulkImport";
+import bankTemplates from "./templates/bankTemplates";
 import {
   createBulkQueueEntry,
   createDefaultChequeData,
@@ -103,6 +105,10 @@ const GlobalStyle = createGlobalStyle`
     }
   }
 `;
+
+const PRINT_SHEET_WIDTH = "204mm";
+const PRINT_SHEET_HEIGHT = "93mm";
+const PRINT_RENDER_DELAY_MS = 350;
 
 const Stack = styled.div`
   display: flex;
@@ -442,6 +448,7 @@ function App() {
   const [printBatch, setPrintBatch] = useState([]);
   const [user, setUser] = useState(null);
   const [authReady, setAuthReady] = useState(false);
+  const printRootRef = useRef(null);
 
   useEffect(() => {
     bootstrapAuth();
@@ -583,9 +590,150 @@ function App() {
     showMessage("Logged out successfully.");
   }
 
+  function getPrintHeadMarkup(sheetWidth, sheetHeight) {
+    const styles = Array.from(
+      document.querySelectorAll('style, link[rel="stylesheet"]'),
+    )
+      .map((node) => node.outerHTML)
+      .join("\n");
+
+    return `
+      <meta charset="utf-8" />
+      <title>\u200B</title>
+      <base href="${document.baseURI}" />
+      ${styles}
+      <style>
+        html, body {
+          width: ${sheetWidth};
+          height: ${sheetHeight};
+          margin: 0;
+          padding: 0;
+          overflow: hidden;
+          background: #ffffff;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
+        body { color: #111111; }
+
+        .print-root {
+          display: block !important;
+          width: ${sheetWidth};
+          margin: 0;
+          padding: 0;
+        }
+
+        .print-sheet {
+          width: ${sheetWidth} !important;
+          height: ${sheetHeight} !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          overflow: hidden !important;
+          page-break-after: always;
+          break-after: page;
+        }
+
+        .print-sheet:last-child {
+          page-break-after: auto;
+          break-after: auto;
+        }
+
+        @page {
+          size: ${sheetWidth} ${sheetHeight};
+          margin: 0mm;
+          -webkit-margin-before: 0;
+          orphans: 0;
+          widows: 0;
+        }
+      </style>
+    `;
+  }
+
   async function openPrintDialog(records) {
-    setPrintBatch(records);
-    setTimeout(() => window.print(), 80);
+    flushSync(() => {
+      setPrintBatch(records);
+    });
+
+    const printMarkup = printRootRef.current?.innerHTML;
+    if (!printMarkup) {
+      window.print();
+      return;
+    }
+
+    // Use the first record's bank to get sheet dimensions
+    const firstBank = records[0]?.bank || "SBI";
+    const bankTemplate = bankTemplates[firstBank] || bankTemplates.SBI;
+    const dims = bankTemplate.printDimensions;
+    const sheetWidth = dims.chequeWidth || PRINT_SHEET_WIDTH;
+    const sheetHeight = dims.chequeHeight || PRINT_SHEET_HEIGHT;
+
+    await new Promise((resolve, reject) => {
+      const iframe = document.createElement("iframe");
+      iframe.setAttribute("aria-hidden", "true");
+      iframe.style.cssText =
+        "position:fixed;right:0;bottom:0;width:1px;height:1px;border:0;opacity:0;";
+
+      let settled = false;
+
+      const cleanup = () => {
+        if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+      };
+
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        setPrintBatch([]);
+        resolve();
+      };
+
+      const fail = (error) => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        setPrintBatch([]);
+        reject(error);
+      };
+
+      document.body.appendChild(iframe);
+
+      const frameWindow = iframe.contentWindow;
+      const frameDocument = frameWindow?.document;
+
+      if (!frameWindow || !frameDocument) {
+        fail(new Error("Unable to prepare the cheque print document."));
+        return;
+      }
+
+      frameWindow.onafterprint = finish;
+
+      // Write the full document synchronously then close
+      frameDocument.open();
+      frameDocument.write(`<!DOCTYPE html>
+<html>
+  <head>${getPrintHeadMarkup(sheetWidth, sheetHeight)}</head>
+  <body><div class="print-root">${printMarkup}</div></body>
+</html>`);
+      frameDocument.close();
+
+      // Wait for resources (fonts/images) then print
+      const triggerPrint = () => {
+        if (settled) return;
+        try {
+          frameWindow.focus();
+          frameWindow.print();
+          // fallback finish if onafterprint never fires
+          window.setTimeout(finish, 3000);
+        } catch (error) {
+          fail(error);
+        }
+      };
+
+      // frameDocument.close() triggers load; use a small buffer for styled-components
+      iframe.onload = () => window.setTimeout(triggerPrint, PRINT_RENDER_DELAY_MS);
+      // hard fallback
+      window.setTimeout(triggerPrint, PRINT_RENDER_DELAY_MS + 800);
+    });
   }
 
   async function handlePrintSingle() {
@@ -935,10 +1083,10 @@ function App() {
                 </SectionCard>
               </Stack>
 
-              <PrintHidden className="print-only print-root">
+              <PrintHidden className="print-only print-root" ref={printRootRef}>
                 {recordsToPrint.map((record, index) => (
                   <div className="print-sheet" key={`${record.chequeNo}-${index}`}>
-                    <ChequeLayout data={record} />
+                    <ChequeLayout data={record} mode="print" />
                   </div>
                 ))}
               </PrintHidden>
