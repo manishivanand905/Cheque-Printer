@@ -15,12 +15,16 @@ export const ChequeWrapper = styled.div`
   font-family: "Times New Roman", Times, serif;
 
   @media print {
-    background: #fffef8 !important;
-    border: none;
-    box-shadow: none;
-    margin: 0;
-    break-inside: avoid;
-    page-break-inside: avoid;
+    position: relative !important;
+    display: block !important;
+    width: ${({ $width }) => $width || "204mm"} !important;
+    height: ${({ $height }) => $height || "93mm"} !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }

@@ -108,7 +108,7 @@ const GlobalStyle = createGlobalStyle`
 
 const PRINT_SHEET_WIDTH = "204mm";
 const PRINT_SHEET_HEIGHT = "93mm";
-const PRINT_RENDER_DELAY_MS = 350;
+const PRINT_RENDER_DELAY_MS = 700;
 
 const Stack = styled.div`
   display: flex;
@@ -599,35 +599,37 @@ function App() {
 
     return `
       <meta charset="utf-8" />
-      <title>\u200B</title>
+      <title>&#x200B;</title>
       <base href="${document.baseURI}" />
       ${styles}
       <style>
-        html, body {
+        * { box-sizing: border-box !important; margin: 0 !important; padding: 0 !important; }
+
+        html {
           width: ${sheetWidth};
           height: ${sheetHeight};
-          margin: 0;
-          padding: 0;
+        }
+
+        body {
+          width: ${sheetWidth};
+          height: ${sheetHeight};
           overflow: hidden;
           background: #ffffff;
           -webkit-print-color-adjust: exact;
           print-color-adjust: exact;
         }
 
-        body { color: #111111; }
-
         .print-root {
           display: block !important;
           width: ${sheetWidth};
-          margin: 0;
-          padding: 0;
+          height: ${sheetHeight};
         }
 
         .print-sheet {
+          position: relative !important;
+          display: block !important;
           width: ${sheetWidth} !important;
           height: ${sheetHeight} !important;
-          margin: 0 !important;
-          padding: 0 !important;
           overflow: hidden !important;
           page-break-after: always;
           break-after: page;
@@ -638,12 +640,15 @@ function App() {
           break-after: auto;
         }
 
+        /* Force every absolutely-positioned cheque field to stay visible */
+        .print-sheet * {
+          visibility: visible !important;
+          opacity: 1 !important;
+        }
+
         @page {
           size: ${sheetWidth} ${sheetHeight};
-          margin: 0mm;
-          -webkit-margin-before: 0;
-          orphans: 0;
-          widows: 0;
+          margin: 0;
         }
       </style>
     `;
